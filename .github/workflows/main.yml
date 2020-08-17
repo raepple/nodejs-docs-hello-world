@@ -20,7 +20,7 @@ jobs:
             username: ${{ secrets.REGISTRY_USERNAME }}
             password: ${{ secrets.REGISTRY_PASSWORD }}
         - run: |
-            docker build -t myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }}
+            docker build -t myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }} .
             docker push myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }}
 
         - name: 'Deploy to Azure Container Instances'
