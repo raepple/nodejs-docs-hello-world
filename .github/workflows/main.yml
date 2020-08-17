@@ -29,6 +29,7 @@ jobs:
             resource-group: ACIRG
             dns-name-label: acidemoapp
             image: myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }}
+            registry-login-server: myacidemoacr.azurecr.io
             registry-username: ${{ secrets.REGISTRY_USERNAME }}
             registry-password: ${{ secrets.REGISTRY_PASSWORD }}
             name: acidemoapp-container
