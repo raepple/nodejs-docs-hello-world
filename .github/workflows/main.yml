@@ -1,37 +1,33 @@
-- name: Deploy to Azure Container Instances
-  uses: Azure/aci-deploy@v1
-  with:
-    # Name of the Resource Group in which the Container Instance will be created
-    resource-group: ACIRG
-    # The DNS Name Label for Container with Public IP
-    dns-name-label: acidemoapp.westeurope.azurecontainer.io
-    # Specify the fully qualified container image name. For example, "myregistry.azurecr.io/nginx:latest" or "python:3.7.2-alpine/"
-    image: nginx
-    # Location where the Container will be deployed
-    location: westeurope
-    # The Log Analytics Workspace Name or Id
-    log-analytics-workspace: # optional
-    # The Log Analytics Workspace Key
-    log-analytics-workspace-key: # optional
-    # The Log type to be used. Accepted Values are { ContainerInsights, ContainerInstanceLogs }
-    log-type: # optional
-    # Required Memory of the Containers in GB, accurate to one decimal place
-    memory: # optional, default is 1.5
-    # Name of the Container Group Instance
-    name: acidemoapp
-    # The OS type of the Containers. Accepted Values are  { Linux, Windows }
-    os-type: # optional, default is Linux
-    # The Ports to Open on the Container. Space seperate the ports for multiple values
-    ports: # optional, default is 80
-    # The Network protocol to use. Accepted Values are { TCP, UDP }
-    protocol: # optional, default is TCP
-    # The container image registry login server
-    registry-login-server: # optional, default is 
-    # Username to log in Container Image Registry Server
-    registry-username: # optional, default is 
-    # Password to log in Container Image Registry Server
-    registry-password: # optional, default is 
-    # Restart Policy for the container(s). Accepted Values are { Always, OnFailure, Never }
-    restart-policy: # optional, default is Always
-    # List of secure environment variables for the container. Space seperated values in "key=value" format
-    secure-environment-variables: # optional, default is 
+on: [push]
+name: Linux_Container_Workflow
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+        steps:
+        # checkout the repo
+        - name: 'Checkout GitHub Action'
+          uses: actions/checkout@master
+          
+        - name: 'Login via Azure CLI'
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+        - uses: azure/docker-login@v1
+          with:
+            login-server: contoso.azurecr.io
+            username: ${{ secrets.REGISTRY_USERNAME }}
+            password: ${{ secrets.REGISTRY_PASSWORD }}
+        - run: |
+            docker build .t contoso.azurecr.io/nodejssampleapp:${{ github.sha }}
+            docker push contoso.azurecr.io/nodejssampleapp:${{ github.sha }}
+
+        - name: 'Deploy to Azure Container Instances'
+          uses: Azure/aci-deploy@v1
+          with:
+            resource-group: ACIRG
+            dns-name-label: acidemoapp.westeurope.azurecontainer.io
+            image: nginx
+            name: acidemoapp-container
+            location: 'west europe'
