@@ -20,14 +20,16 @@ jobs:
             username: ${{ secrets.REGISTRY_USERNAME }}
             password: ${{ secrets.REGISTRY_PASSWORD }}
         - run: |
-            docker build .t myacidemoacr.azurecr.io/nodejssampleapp:${{ github.sha }}
-            docker push myacidemoacr.azurecr.io/nodejssampleapp:${{ github.sha }}
+            docker build .t myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }}
+            docker push myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }}
 
         - name: 'Deploy to Azure Container Instances'
-          uses: Azure/aci-deploy@v1
+          uses: 'azure/aci-deploy@v1'
           with:
-            resource-group: ACIRG
+            resource-group: contoso
             dns-name-label: acidemoapp.westeurope.azurecontainer.io
-            image: nginx
-            name: acidemoapp-container
+            image: myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }}
+            registry-username: ${{ secrets.REGISTRY_USERNAME }}
+            registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+            name: acidemoapp
             location: 'west europe'
