@@ -27,7 +27,7 @@ jobs:
           uses: 'azure/aci-deploy@v1'
           with:
             resource-group: ACIRG
-            dns-name-label: acidemoapp.westeurope.azurecontainer.io
+            dns-name-label: acidemoapp
             image: myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }}
             registry-username: ${{ secrets.REGISTRY_USERNAME }}
             registry-password: ${{ secrets.REGISTRY_PASSWORD }}
