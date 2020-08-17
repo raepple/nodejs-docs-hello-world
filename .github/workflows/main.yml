@@ -31,5 +31,5 @@ jobs:
             image: myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }}
             registry-username: ${{ secrets.REGISTRY_USERNAME }}
             registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-            name: acidemoapp
-            location: 'west europe'
+            name: acidemoapp-container
+            location: 'westeurope'
