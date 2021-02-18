@@ -6,7 +6,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         # checkout the repo
-        - name: 'Checkout GitHub Action'
+        - name: Checkout GitHub Action
           uses: actions/checkout@master
           
         - name: 'Login via Azure CLI'
@@ -23,8 +23,31 @@ jobs:
             docker build -t acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }} .
             docker push acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
 
-        - name: 'Deploy to Azure Container Instances'
-          uses: 'azure/aci-deploy@v1'
+        #- name: Kubernetes set context
+        #  uses: azure/k8s-set-context@v1
+        #  with:          
+        #    method: service-account                
+        #    k8s-url: https://aks4devops-ba574c46.hcp.northeurope.azmk8s.io:443
+        #    k8s-secret: ${{ secrets.KUBE_CONFIG }}
+            
+        - name: Azure Kubernetes set context
+          uses: azure/aks-set-context@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+            resource-group: devopsaks
+            cluster-name: aks4devops
+
+        - name: Create secret in Kubernetes cluster to pull from registry
+          uses: Azure/k8s-create-secret@v1.1
+          with:
+            namespace: default
+            container-registry-url: acr4devops.azurecr.io
+            container-registry-username: ${{ secrets.REGISTRY_USERNAME }}            
+            container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+            secret-name: devopsdemo-cr
+          
+        - name: Deploy to Azure Container Instances
+          uses: azure/aci-deploy@v1
           with:
             resource-group: devopsaks
             dns-name-label: devopsdemoapp
@@ -33,4 +56,4 @@ jobs:
             registry-username: ${{ secrets.REGISTRY_USERNAME }}
             registry-password: ${{ secrets.REGISTRY_PASSWORD }}
             name: devopsdemoapp-container
-            location: 'northeurope'
+            location: northeurope
