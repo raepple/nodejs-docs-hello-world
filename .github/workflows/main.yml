@@ -1,12 +1,11 @@
 on: [push, workflow_dispatch]
-name: Build and deploy
+name: Build-and-deploy
 
 jobs:
     build-and-deploy:
       if: github.event_name == 'push'
       runs-on: ubuntu-latest
       steps:
-        # checkout the repo
         - name: Checkout GitHub Action
           uses: actions/checkout@master
           
@@ -51,17 +50,16 @@ jobs:
           id: bake
             
         - name: Deploy app to AKS
-          uses: azure/k8s-deploy@v1.3
+          uses: azure/k8s-deploy@v1
           with:
             manifests: ${{ steps.bake.outputs.manifestsBundle }}
             images: |
               acr4devops.azurecr.io/devopsdemoapp:${{ github.run_id }}
             imagepullsecrets: |
-              devopsdemo-cr
-            strategy: blue-green
-            route-method: ingress
-            version-switch-buffer: 3
+              devopsdemo-cr            
             namespace: default
+            # strategy: blue-green
+            # route-method: ingress
 
     reject_green_deployment:
       if: github.event_name == 'workflow_dispatch'
