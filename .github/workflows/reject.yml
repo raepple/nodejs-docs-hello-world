@@ -1,28 +1,16 @@
-on: [push]
-name: Build and deploy
+on: [workflow_dispatch]
+name: Reject Green
 
 jobs:
-    build-and-deploy:
+    reject-green:
         runs-on: ubuntu-latest
-        steps:
-        # checkout the repo
-        - name: Checkout GitHub Action
-          uses: actions/checkout@master
-          
-        - name: 'Login via Azure CLI'
-          uses: azure/login@v1
-          with:
-            creds: ${{ secrets.AZURE_CREDENTIALS }}
-        
+        steps:       
         - uses: azure/docker-login@v1
           with:
             login-server: acr4devops.azurecr.io
             username: ${{ secrets.REGISTRY_USERNAME }}
             password: ${{ secrets.REGISTRY_PASSWORD }}
-        - run: |
-            docker build -t acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }} .
-            docker push acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
-            
+        
         - name: Azure Kubernetes set context
           uses: azure/aks-set-context@v1
           with:
@@ -60,17 +48,4 @@ jobs:
               devopsdemo-cr
             strategy: blue-green
             route-method: ingress
-            version-switch-buffer: 3
-            namespace: default
-
-        #- name: Deploy to Azure Container Instances (ACI)
-        #  uses: azure/aci-deploy@v1
-        #  with:
-        #    resource-group: devopsaks
-        #    dns-name-label: devopsdemoapp
-        #    image: acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
-        #    registry-login-server: acr4devops.azurecr.io
-        #    registry-username: ${{ secrets.REGISTRY_USERNAME }}
-        #    registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-        #    name: devopsdemoapp-container
-        #    location: northeurope
+            action: reject
