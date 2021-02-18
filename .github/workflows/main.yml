@@ -23,12 +23,19 @@ jobs:
             docker build -t acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }} .
             docker push acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
 
-        - name: Kubernetes set context
-          uses: azure/k8s-set-context@v1
-          with:          
-            method: service-account                
-            k8s-url: https://aks4devops-ba574c46.hcp.northeurope.azmk8s.io:443
-            k8s-secret: ${{ secrets.KUBE_CONFIG }}
+        #- name: Kubernetes set context
+        #  uses: azure/k8s-set-context@v1
+        #  with:          
+        #    method: service-account                
+        #    k8s-url: https://aks4devops-ba574c46.hcp.northeurope.azmk8s.io:443
+        #    k8s-secret: ${{ secrets.KUBE_CONFIG }}
+            
+        - name: Azure Kubernetes set context
+          uses: azure/aks-set-context@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}    
+            resource-group: devopsaks    
+            cluster-name: aks4devops          
 
         - name: Deploy to Azure Container Instances
           uses: azure/aci-deploy@v1
