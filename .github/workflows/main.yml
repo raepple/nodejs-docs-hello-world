@@ -63,6 +63,8 @@ jobs:
               acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
             imagepullsecrets: |
               devopsdemo-cr
+            overrides: |
+              image.tag:${{ github.sha }}
             namespace: default
 
         - name: Deploy to Azure Container Instances
