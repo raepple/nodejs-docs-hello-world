@@ -60,29 +60,4 @@ jobs:
             namespace: default
             # strategy: blue-green
             # route-method: ingress
-
-    reject_green_deployment:
-      if: github.event_name == 'workflow_dispatch'
-      runs-on: ubuntu-latest
-      steps:
-        - name: Baking the helm chart to generate the manifests to deploy
-          uses: Azure/k8s-bake@v1
-          with:
-            renderEngine: helm            
-            helmChart: ./devopschart/
-            helm-version: latest
-            overrides: |
-              image.tag:${{ github.run_id }}
-          id: bake
             
-        - name: Deploy app to AKS
-          uses: azure/k8s-deploy@v1.3
-          with:
-            manifests: ${{ steps.bake.outputs.manifestsBundle }}
-            images: |
-              acr4devops.azurecr.io/devopsdemoapp:${{ github.run_id }}
-            imagepullsecrets: |
-              devopsdemo-cr
-            strategy: blue-green
-            route-method: ingress
-            action: reject
