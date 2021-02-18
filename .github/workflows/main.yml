@@ -36,16 +36,35 @@ jobs:
             creds: ${{ secrets.AZURE_CREDENTIALS }}
             resource-group: devopsaks
             cluster-name: aks4devops
-
-        - name: Create secret in Kubernetes cluster to pull from registry
-          uses: Azure/k8s-create-secret@v1.1
+        
+        - name: Create imagepullsecret for Azure Container registry (ACR)
+          uses: azure/k8s-create-secret@v1.1
           with:
             namespace: default
             container-registry-url: acr4devops.azurecr.io
             container-registry-username: ${{ secrets.REGISTRY_USERNAME }}            
             container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
             secret-name: devopsdemo-cr
-          
+
+        - name: Baking the helm chart to generate the manifests to deploy
+          uses: Azure/k8s-bake@v1
+          with:
+            # Acceptable values: helm or kompose or kustomize
+            renderEngine: helm            
+            helmChart: ./devopschart/
+            helm-version: latest
+          id: bake
+            
+        - name: Deploy app to AKS
+          uses: azure/k8s-deploy@v1
+          with:
+            manifests: ${{ steps.bake.outputs.manifestsBundle }}
+            images: |
+              acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
+            imagepullsecrets: |
+              devopsdemo-cr
+            namespace: default
+
         - name: Deploy to Azure Container Instances
           uses: azure/aci-deploy@v1
           with:
