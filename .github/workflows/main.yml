@@ -21,8 +21,8 @@ jobs:
             username: ${{ secrets.REGISTRY_USERNAME }}
             password: ${{ secrets.REGISTRY_PASSWORD }}
         - run: |
-            docker build -t acr4devops.azurecr.io/devopsdemoapp:${{ event.run_id }} .
-            docker push acr4devops.azurecr.io/devopsdemoapp:${{ event.run_id }}
+            docker build -t acr4devops.azurecr.io/devopsdemoapp:${{ github.run_id }} .
+            docker push acr4devops.azurecr.io/devopsdemoapp:${{ github.run_id }}
             
         - name: Azure Kubernetes set context
           uses: azure/aks-set-context@v1
@@ -55,7 +55,7 @@ jobs:
           with:
             manifests: ${{ steps.bake.outputs.manifestsBundle }}
             images: |
-              acr4devops.azurecr.io/devopsdemoapp:${{ event.run_id }}
+              acr4devops.azurecr.io/devopsdemoapp:${{ github.run_id }}
             imagepullsecrets: |
               devopsdemo-cr
             strategy: blue-green
@@ -74,7 +74,7 @@ jobs:
             helmChart: ./devopschart/
             helm-version: latest
             overrides: |
-              image.tag:${{ event.run_id }}
+              image.tag:${{ github.run_id }}
           id: bake
             
         - name: Deploy app to AKS
@@ -82,7 +82,7 @@ jobs:
           with:
             manifests: ${{ steps.bake.outputs.manifestsBundle }}
             images: |
-              acr4devops.azurecr.io/devopsdemoapp:${{ event.run_id }}
+              acr4devops.azurecr.io/devopsdemoapp:${{ github.run_id }}
             imagepullsecrets: |
               devopsdemo-cr
             strategy: blue-green
