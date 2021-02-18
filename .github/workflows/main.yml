@@ -53,6 +53,8 @@ jobs:
             renderEngine: helm            
             helmChart: ./devopschart/
             helm-version: latest
+            overrides: |
+              image.tag:${{ github.sha }}
           id: bake
             
         - name: Deploy app to AKS
@@ -62,9 +64,7 @@ jobs:
             images: |
               acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
             imagepullsecrets: |
-              devopsdemo-cr
-            overrides: |
-              image.tag:${{ github.sha }}
+              devopsdemo-cr            
             namespace: default
 
         - name: Deploy to Azure Container Instances

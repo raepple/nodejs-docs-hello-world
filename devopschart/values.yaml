@@ -8,11 +8,11 @@ image:
   repository: acr4devops.azurecr.io/devopsdemoapp
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "3faedfe2bb0636aeec269c4b9f41c02671154f78"
+  tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
-fullnameOverride: ""
+fullnameOverride: "devopsdemoapp"
 
 serviceAccount:
   # Specifies whether a service account should be created
