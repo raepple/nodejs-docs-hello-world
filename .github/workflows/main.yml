@@ -47,7 +47,7 @@ jobs:
             helmChart: ./devopschart/
             helm-version: latest
             overrides: |
-              image.tag:${{ event.run_id }}
+              image.tag:${{ github.run_id }}
           id: bake
             
         - name: Deploy app to AKS
