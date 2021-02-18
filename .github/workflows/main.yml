@@ -1,10 +1,11 @@
-on: [push]
+on: [push, workflow_dispatch]
 name: Build and deploy
 
 jobs:
     build-and-deploy:
-        runs-on: ubuntu-latest
-        steps:
+      if: github.event_name == 'push'
+      runs-on: ubuntu-latest
+      steps:
         # checkout the repo
         - name: Checkout GitHub Action
           uses: actions/checkout@master
@@ -20,8 +21,8 @@ jobs:
             username: ${{ secrets.REGISTRY_USERNAME }}
             password: ${{ secrets.REGISTRY_PASSWORD }}
         - run: |
-            docker build -t acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }} .
-            docker push acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
+            docker build -t acr4devops.azurecr.io/devopsdemoapp:${{ event.run_id }} .
+            docker push acr4devops.azurecr.io/devopsdemoapp:${{ event.run_id }}
             
         - name: Azure Kubernetes set context
           uses: azure/aks-set-context@v1
@@ -42,12 +43,11 @@ jobs:
         - name: Baking the helm chart to generate the manifests to deploy
           uses: Azure/k8s-bake@v1
           with:
-            # Acceptable values: helm or kompose or kustomize
             renderEngine: helm            
             helmChart: ./devopschart/
             helm-version: latest
             overrides: |
-              image.tag:${{ github.sha }}
+              image.tag:${{ event.run_id }}
           id: bake
             
         - name: Deploy app to AKS
@@ -55,7 +55,7 @@ jobs:
           with:
             manifests: ${{ steps.bake.outputs.manifestsBundle }}
             images: |
-              acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
+              acr4devops.azurecr.io/devopsdemoapp:${{ event.run_id }}
             imagepullsecrets: |
               devopsdemo-cr
             strategy: blue-green
@@ -63,14 +63,28 @@ jobs:
             version-switch-buffer: 3
             namespace: default
 
-        #- name: Deploy to Azure Container Instances (ACI)
-        #  uses: azure/aci-deploy@v1
-        #  with:
-        #    resource-group: devopsaks
-        #    dns-name-label: devopsdemoapp
-        #    image: acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
-        #    registry-login-server: acr4devops.azurecr.io
-        #    registry-username: ${{ secrets.REGISTRY_USERNAME }}
-        #    registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-        #    name: devopsdemoapp-container
-        #    location: northeurope
+    reject_green_deployment:
+      if: github.event_name == 'workflow_dispatch'
+      runs-on: ubuntu-latest
+      steps:
+        - name: Baking the helm chart to generate the manifests to deploy
+          uses: Azure/k8s-bake@v1
+          with:
+            renderEngine: helm            
+            helmChart: ./devopschart/
+            helm-version: latest
+            overrides: |
+              image.tag:${{ event.run_id }}
+          id: bake
+            
+        - name: Deploy app to AKS
+          uses: azure/k8s-deploy@v1.3
+          with:
+            manifests: ${{ steps.bake.outputs.manifestsBundle }}
+            images: |
+              acr4devops.azurecr.io/devopsdemoapp:${{ event.run_id }}
+            imagepullsecrets: |
+              devopsdemo-cr
+            strategy: blue-green
+            route-method: ingress
+            action: reject
