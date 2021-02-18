@@ -33,10 +33,19 @@ jobs:
         - name: Azure Kubernetes set context
           uses: azure/aks-set-context@v1
           with:
-            creds: ${{ secrets.AZURE_CREDENTIALS }}    
-            resource-group: devopsaks    
-            cluster-name: aks4devops          
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+            resource-group: devopsaks
+            cluster-name: aks4devops
 
+        - name: Create secret in Kubernetes cluster to pull from registry
+          uses: Azure/k8s-create-secret@v1.1
+          with:
+            namespace: default
+            container-registry-url: acr4devops.azurecr.io
+            container-registry-username: ${{ secrets.REGISTRY_USERNAME }}            
+            container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+            secret-name: devopsdemo-cr
+          
         - name: Deploy to Azure Container Instances
           uses: azure/aci-deploy@v1
           with:
