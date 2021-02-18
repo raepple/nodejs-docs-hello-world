@@ -16,21 +16,21 @@ jobs:
         
         - uses: azure/docker-login@v1
           with:
-            login-server: myacidemoacr.azurecr.io
+            login-server: acr4devops.azurecr.io
             username: ${{ secrets.REGISTRY_USERNAME }}
             password: ${{ secrets.REGISTRY_PASSWORD }}
         - run: |
-            docker build -t myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }} .
-            docker push myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }}
+            docker build -t acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }} .
+            docker push acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
 
         - name: 'Deploy to Azure Container Instances'
           uses: 'azure/aci-deploy@v1'
           with:
-            resource-group: ACIRG
-            dns-name-label: acidemoapp
-            image: myacidemoacr.azurecr.io/acidemoapp:${{ github.sha }}
-            registry-login-server: myacidemoacr.azurecr.io
+            resource-group: devopsaks
+            dns-name-label: devopsdemoapp
+            image: acr4devops.azurecr.io/devopsdemoapp:${{ github.sha }}
+            registry-login-server: acr4devops.azurecr.io
             registry-username: ${{ secrets.REGISTRY_USERNAME }}
             registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-            name: acidemoapp-container
-            location: 'westeurope'
+            name: devopsdemoapp-container
+            location: 'northeurope'
