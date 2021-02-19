@@ -58,6 +58,6 @@ jobs:
             imagepullsecrets: |
               devopsdemo-cr            
             namespace: default
-            # strategy: blue-green
-            # route-method: ingress
+            strategy: blue-green
+            route-method: ingress
             
